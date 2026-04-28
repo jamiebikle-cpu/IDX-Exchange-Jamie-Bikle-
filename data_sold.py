@@ -10,6 +10,8 @@ import os
 import matplotlib.pyplot as plt
 
 
+
+# %% week 1
 data_folder = 'idxex'
 months = []
 
@@ -43,6 +45,8 @@ sold.to_csv('idxex/sold_combined.csv', index = False)
 print('Saved: idxex/sold_combined.csv')
 
 
+
+# %% weeks 2-3
 print(sold.shape)         
 print(sold.dtypes)         
 print(sold.isnull().sum()) 
@@ -74,6 +78,7 @@ dist_cols = ["ClosePrice", "ListPrice", "OriginalListPrice", "LivingArea",
 
 print(sold[dist_cols].describe(percentiles=[.1,.25,.5,.75,.9]))
 
+           
 
 for col in dist_cols:
     plt.figure()
@@ -116,3 +121,61 @@ print(f'Null rates after merge: {sold_with_rates["rate_30yr_fixed"].isnull().sum
 sold_with_rates.to_csv('idxex/sold_with_rates.csv', index=False)
 print('Saved: idxex/sold_with_rates.csv')
 
+
+# %% weeks 4-5
+sold_with_rates["CloseDate"] = pd.to_datetime(sold_with_rates["CloseDate"])
+sold_with_rates["PurchaseContractDate"] = pd.to_datetime(sold_with_rates["PurchaseContractDate"])
+sold_with_rates["ListingContractDate"] = pd.to_datetime(sold_with_rates["ListingContractDate"])
+sold_with_rates["ListingContractDate"] = pd.to_datetime(sold_with_rates["ListingContractDate"])               
+sold_with_rates["ContractStatusChangeDate"] = pd.to_datetime(sold_with_rates["ContractStatusChangeDate"])               
+
+
+
+
+sold_with_rates["listing_after_close_flag"] = sold_with_rates["ListingContractDate"] > sold_with_rates["CloseDate"]
+sold_with_rates["purchase_after_close_flag"] = sold_with_rates["PurchaseContractDate"] > sold_with_rates["CloseDate"]
+
+sold_with_rates["negative_timeline_flag"] = (
+    sold_with_rates["listing_after_close_flag"] |
+    sold_with_rates["purchase_after_close_flag"] |
+    (sold_with_rates["ListingContractDate"] > sold_with_rates["PurchaseContractDate"])
+)
+                   
+
+sold_with_rates["ClosePrice_flag"] = sold_with_rates["ClosePrice"] <= 0
+sold_with_rates["LivingArea_flag"] = sold_with_rates["LivingArea"] <= 0
+sold_with_rates["DaysOnMarket_flag"] = sold_with_rates["DaysOnMarket"] < 0
+sold_with_rates["BedroomsTotal_flag"] = sold_with_rates["BedroomsTotal"] < 0
+sold_with_rates["BathroomsTotalInteger_flag"] = sold_with_rates["BathroomsTotalInteger"] < 0
+
+sold_with_rates["Latitude_missing_flag"] = sold_with_rates["Latitude"].isnull()
+sold_with_rates["Longitude_missing_flag"] = sold_with_rates["Longitude"].isnull()
+
+sold_with_rates["Latitude_zero_flag"] = sold_with_rates["Latitude"] == 0
+sold_with_rates["Longitude_zero_flag"] = sold_with_rates["Longitude"] == 0
+
+sold_with_rates["Longitude_positive_flag"] = sold_with_rates["Longitude"] > 0
+
+sold_with_rates["Latitude_state_flag"] = (
+    (sold_with_rates["Latitude"] < 32.5) |
+    (sold_with_rates["Latitude"] > 42) |
+    (sold_with_rates["Longitude"] < -124.5) |
+    (sold_with_rates["Longitude"] > -114)
+)
+
+sold_with_rates.to_csv('idxex/sold_with_flags.csv', index=False)
+
+print(f'listing_after_close_flag: {sold_with_rates["listing_after_close_flag"].sum()}')
+print(f'purchase_after_close_flag: {sold_with_rates["purchase_after_close_flag"].sum()}')
+print(f'negative_timeline_flag: {sold_with_rates["negative_timeline_flag"].sum()}')
+print(f'ClosePrice_flag: {sold_with_rates["ClosePrice_flag"].sum()}')
+print(f'LivingArea_flag: {sold_with_rates["LivingArea_flag"].sum()}')
+print(f'DaysOnMarket_flag: {sold_with_rates["DaysOnMarket_flag"].sum()}')
+print(f'BedroomsTotal_flag: {sold_with_rates["BedroomsTotal_flag"].sum()}')
+print(f'BathroomsTotalInteger_flag: {sold_with_rates["BathroomsTotalInteger_flag"].sum()}')
+print(f'Latitude_missing_flag: {sold_with_rates["Latitude_missing_flag"].sum()}')
+print(f'Longitude_missing_flag: {sold_with_rates["Longitude_missing_flag"].sum()}')
+print(f'Latitude_zero_flag: {sold_with_rates["Latitude_zero_flag"].sum()}')
+print(f'Longitude_zero_flag: {sold_with_rates["Longitude_zero_flag"].sum()}')
+print(f'Longitude_positive_flag: {sold_with_rates["Longitude_positive_flag"].sum()}')
+print(f'out_of_state_flag: {sold_with_rates["Latitude_state_flag"].sum()}')
