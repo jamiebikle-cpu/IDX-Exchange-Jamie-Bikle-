@@ -123,6 +123,8 @@ print('Saved: idxex/sold_with_rates.csv')
 
 
 # %% weeks 4-5
+
+#convert to datetime
 sold_with_rates["CloseDate"] = pd.to_datetime(sold_with_rates["CloseDate"])
 sold_with_rates["PurchaseContractDate"] = pd.to_datetime(sold_with_rates["PurchaseContractDate"])
 sold_with_rates["ListingContractDate"] = pd.to_datetime(sold_with_rates["ListingContractDate"])
@@ -131,10 +133,10 @@ sold_with_rates["ContractStatusChangeDate"] = pd.to_datetime(sold_with_rates["Co
 
 
 
-
+#flags where timeline is not in chronological order
+#for example, a listing cannot be created after it closes/is under contract
 sold_with_rates["listing_after_close_flag"] = sold_with_rates["ListingContractDate"] > sold_with_rates["CloseDate"]
 sold_with_rates["purchase_after_close_flag"] = sold_with_rates["PurchaseContractDate"] > sold_with_rates["CloseDate"]
-
 sold_with_rates["negative_timeline_flag"] = (
     sold_with_rates["listing_after_close_flag"] |
     sold_with_rates["purchase_after_close_flag"] |
@@ -142,20 +144,25 @@ sold_with_rates["negative_timeline_flag"] = (
 )
                    
 
+#flags impossible values
 sold_with_rates["ClosePrice_flag"] = sold_with_rates["ClosePrice"] <= 0
 sold_with_rates["LivingArea_flag"] = sold_with_rates["LivingArea"] <= 0
 sold_with_rates["DaysOnMarket_flag"] = sold_with_rates["DaysOnMarket"] < 0
 sold_with_rates["BedroomsTotal_flag"] = sold_with_rates["BedroomsTotal"] < 0
 sold_with_rates["BathroomsTotalInteger_flag"] = sold_with_rates["BathroomsTotalInteger"] < 0
 
+#missing coordinates
 sold_with_rates["Latitude_missing_flag"] = sold_with_rates["Latitude"].isnull()
 sold_with_rates["Longitude_missing_flag"] = sold_with_rates["Longitude"].isnull()
 
+#flags lat/lon = 0 
 sold_with_rates["Latitude_zero_flag"] = sold_with_rates["Latitude"] == 0
 sold_with_rates["Longitude_zero_flag"] = sold_with_rates["Longitude"] == 0
 
+#flags if positive longitude as all ca properties have negative lon
 sold_with_rates["Longitude_positive_flag"] = sold_with_rates["Longitude"] > 0
 
+#flags out of state coordinates
 sold_with_rates["Latitude_state_flag"] = (
     (sold_with_rates["Latitude"] < 32.5) |
     (sold_with_rates["Latitude"] > 42) |
@@ -163,7 +170,9 @@ sold_with_rates["Latitude_state_flag"] = (
     (sold_with_rates["Longitude"] > -114)
 )
 
+
 sold_with_rates.to_csv('idxex/sold_with_flags.csv', index=False)
+
 
 flag_cols = [
     'listing_after_close_flag', 'purchase_after_close_flag', 'negative_timeline_flag',
@@ -176,3 +185,15 @@ flag_cols = [
 
 for flag in flag_cols:
     print(f'{flag}: {sold_with_rates[flag].sum()}')
+    
+# geographic data quality summary
+invalid_coords = sold_with_rates[
+    sold_with_rates["Latitude_missing_flag"] |
+    sold_with_rates["Longitude_missing_flag"] |
+    sold_with_rates["Latitude_zero_flag"] |
+    sold_with_rates["Longitude_zero_flag"] |
+    sold_with_rates["Longitude_positive_flag"] |
+    sold_with_rates["Latitude_state_flag"]
+]
+print(f'\nTotal records with invalid coordinates: {len(invalid_coords)}')
+print(f'As a percentage of total records: {len(invalid_coords) / len(sold_with_rates) * 100:.2f}%')
