@@ -166,18 +166,15 @@ listing_with_rates["Latitude_state_flag"] = (
 
 listing_with_rates.to_csv('idxex/listing_with_flags.csv', index=False)
 
-print(f'listing_after_close_flag: {listing_with_rates["listing_after_close_flag"].sum()}')
-print(f'purchase_after_close_flag: {listing_with_rates["purchase_after_close_flag"].sum()}')
-print(f'negative_timeline_flag: {listing_with_rates["negative_timeline_flag"].sum()}')
-print(f'ClosePrice_flag: {listing_with_rates["ClosePrice_flag"].sum()}')
-print(f'LivingArea_flag: {listing_with_rates["LivingArea_flag"].sum()}')
-print(f'DaysOnMarket_flag: {listing_with_rates["DaysOnMarket_flag"].sum()}')
-print(f'BedroomsTotal_flag: {listing_with_rates["BedroomsTotal_flag"].sum()}')
-print(f'BathroomsTotalInteger_flag: {listing_with_rates["BathroomsTotalInteger_flag"].sum()}')
-print(f'Latitude_missing_flag: {listing_with_rates["Latitude_missing_flag"].sum()}')
-print(f'Longitude_missing_flag: {listing_with_rates["Longitude_missing_flag"].sum()}')
-print(f'Latitude_zero_flag: {listing_with_rates["Latitude_zero_flag"].sum()}')
-print(f'Longitude_zero_flag: {listing_with_rates["Longitude_zero_flag"].sum()}')
-print(f'Longitude_positive_flag: {listing_with_rates["Longitude_positive_flag"].sum()}')
-print(f'out_of_state_flag: {listing_with_rates["Latitude_state_flag"].sum()}')
+flag_cols = [
+    'listing_after_close_flag', 'purchase_after_close_flag', 'negative_timeline_flag',
+    'ClosePrice_flag', 'LivingArea_flag', 'DaysOnMarket_flag',
+    'BedroomsTotal_flag', 'BathroomsTotalInteger_flag',
+    'Latitude_missing_flag', 'Longitude_missing_flag',
+    'Latitude_zero_flag', 'Longitude_zero_flag',
+    'Longitude_positive_flag', 'Latitude_state_flag'
+]
+
+for flag in flag_cols:
+    print(f'{flag}: {listing_with_rates[flag].sum()}')
 
