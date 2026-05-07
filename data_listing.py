@@ -234,4 +234,4 @@ print(listing_with_rates[['ListPrice', 'PriceRatio', 'CloseToOriginalListRatio',
 
 #csv file
 listing_with_rates.to_csv('idxex/listing_week6.csv', index=False)
-print('Saved: idxex/listing_week6.csv')
+print('Saved: idxex/listing_with_flags.csv')
