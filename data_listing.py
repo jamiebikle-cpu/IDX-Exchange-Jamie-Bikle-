@@ -17,7 +17,7 @@ months = []
 
 for year in [2024, 2025, 2026]:
     if year == 2026:
-        month_range = range(1,4)
+        month_range = range(1,5)
         
     else:
         month_range = range(1,13)
@@ -200,3 +200,38 @@ print(f'\nTotal records with invalid coordinates: {len(invalid_coords)}')
 print(f'As a percentage of total records: {len(invalid_coords) / len(listing_with_rates) * 100:.2f}%')
 
 
+# %% week 6
+
+#key metrics
+listing_with_rates["PriceRatio"] = listing_with_rates["ClosePrice"] / listing_with_rates["OriginalListPrice"]
+listing_with_rates["PricePerSqFt"] = listing_with_rates["ListPrice"] / listing_with_rates["LivingArea"]
+listing_with_rates["Year"] = listing_with_rates["ListingContractDate"].dt.year
+listing_with_rates["Month"] = listing_with_rates["ListingContractDate"].dt.month
+listing_with_rates["YrMo"] = listing_with_rates["ListingContractDate"].dt.to_period("M").astype(str)
+listing_with_rates["CloseToOriginalListRatio"] = listing_with_rates["ClosePrice"] / listing_with_rates["OriginalListPrice"]
+listing_with_rates["ListingToContractDays"] = (
+    listing_with_rates["PurchaseContractDate"] - listing_with_rates["ListingContractDate"]
+).dt.days
+
+listing_with_rates["ContractToCloseDays"] = (
+    listing_with_rates["CloseDate"] - listing_with_rates["PurchaseContractDate"]
+).dt.days
+
+#segment analysis
+print(listing_with_rates.groupby("PropertySubType")["ListPrice"].agg(["count", "mean", "median", "min", "max"]))
+print(listing_with_rates.groupby("PropertyType")["ListPrice"].agg(["count", "mean", "median", "min", "max"]))
+
+print(listing_with_rates.groupby("CountyOrParish")["ListPrice"].agg(["count", "mean", "median", "min", "max"]))
+print(listing_with_rates.groupby("MLSAreaMajor")["ListPrice"].agg(["count", "mean", "median", "min", "max"]))
+
+print(listing_with_rates.groupby("ListOfficeName")["ListPrice"].agg(["count", "mean", "median", "min", "max"]))
+print(listing_with_rates.groupby("BuyerOfficeName")["ListPrice"].agg(["count", "mean", "median", "min", "max"]))
+
+#output table
+print(listing_with_rates[['ListPrice', 'PriceRatio', 'CloseToOriginalListRatio',
+                           'PricePerSqFt', 'DaysOnMarket', 'YrMo',
+                           'ListingToContractDays', 'ContractToCloseDays']].head(10))
+
+#csv file
+listing_with_rates.to_csv('idxex/listing_week6.csv', index=False)
+print('Saved: idxex/listing_week6.csv')

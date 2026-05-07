@@ -17,7 +17,7 @@ months = []
 
 for year in [2024, 2025, 2026]:
     if year == 2026:
-        month_range = range(1,4)
+        month_range = range(1,5)
         
     else:
         month_range = range(1,13)
@@ -197,3 +197,50 @@ invalid_coords = sold_with_rates[
 ]
 print(f'\nTotal records with invalid coordinates: {len(invalid_coords)}')
 print(f'As a percentage of total records: {len(invalid_coords) / len(sold_with_rates) * 100:.2f}%')
+
+# %% week 6
+
+#key metrics
+sold_with_rates["PriceRatio"] = sold_with_rates["ClosePrice"] / sold_with_rates["OriginalListPrice"]
+sold_with_rates["PricePerSqFt"] = sold_with_rates["ClosePrice"] / sold_with_rates["LivingArea"]
+sold_with_rates["Year"] = sold_with_rates["CloseDate"].dt.year
+sold_with_rates["Month"] = sold_with_rates["CloseDate"].dt.month
+sold_with_rates["YrMo"] = sold_with_rates["CloseDate"].dt.to_period("M").astype(str)
+sold_with_rates["CloseToOriginalListRatio"] = sold_with_rates["ClosePrice"] / sold_with_rates["OriginalListPrice"]
+sold_with_rates["ListingToContractDays"] = (
+    sold_with_rates["PurchaseContractDate"] - sold_with_rates["ListingContractDate"]
+).dt.days
+
+sold_with_rates["ContractToCloseDays"] = (
+    sold_with_rates["CloseDate"] - sold_with_rates["PurchaseContractDate"]
+).dt.days
+
+#segment analysis
+print(sold_with_rates.groupby("PropertySubType")["ClosePrice"].agg(["count", "mean", "median", "min", "max"]))
+print(sold_with_rates.groupby("PropertyType")["ClosePrice"].agg(["count", "mean", "median", "min", "max"]))
+
+print(sold_with_rates.groupby("CountyOrParish")["ClosePrice"].agg(["count", "mean", "median", "min", "max"]))
+print(sold_with_rates.groupby("MLSAreaMajor")["ClosePrice"].agg(["count", "mean", "median", "min", "max"]))
+
+print(sold_with_rates.groupby("ListOfficeName")["ClosePrice"].agg(["count", "mean", "median", "min", "max"]))
+print(sold_with_rates.groupby("BuyerOfficeName")["ClosePrice"].agg(["count", "mean", "median", "min", "max"]))
+
+
+#output table
+print(sold_with_rates[['ClosePrice', 'PriceRatio', 'CloseToOriginalListRatio', 
+                        'PricePerSqFt', 'DaysOnMarket', 'YrMo', 
+                        'ListingToContractDays', 'ContractToCloseDays']].head(10))
+
+#csv file
+sold_with_rates.to_csv('idxex/sold_week6.csv', index=False)
+print('Saved: idxex/sold_with_flags.csv')
+
+
+
+
+
+
+
+
+
+
