@@ -235,3 +235,44 @@ print(listing_with_rates[['ListPrice', 'PriceRatio', 'CloseToOriginalListRatio',
 #csv file
 listing_with_rates.to_csv('idxex/listing_week6.csv', index=False)
 print('Saved: idxex/listing_with_flags.csv')
+
+# %% week 7
+print(listing_with_rates[["ClosePrice", "LivingArea", "DaysOnMarket"]].describe(percentiles=[.01, .05, .10, .90, .95, .99]))
+
+def iqr_func(df, col): 
+    Q1 = df[col].quantile(0.25)
+    Q3 = df[col].quantile(0.75)
+    IQR = Q3 - Q1
+    lower = Q1 - 1.5 * IQR
+    upper = Q3 + 1.5 * IQR
+    df[col + "_outlier_flag"] = (df[col] < lower) | (df[col] > upper)
+    return df
+
+listing_with_rates = iqr_func(listing_with_rates, "ListPrice")
+listing_with_rates = iqr_func(listing_with_rates, "LivingArea")
+listing_with_rates = iqr_func(listing_with_rates, "DaysOnMarket")
+
+listing_with_rates.to_csv('idxex/listing_flagged.csv', index=False)
+print('Saved: idxex/listing_flagged.csv')
+
+listing_clean = listing_with_rates[
+    (listing_with_rates["ListPrice_outlier_flag"] == False) &
+    (listing_with_rates["LivingArea_outlier_flag"] == False) &
+    (listing_with_rates["DaysOnMarket_outlier_flag"] == False)
+]
+
+listing_clean.to_csv('idxex/listing_clean.csv', index=False)
+print('Saved: idxex/listing_clean.csv')
+
+print(f'Rows before outlier removal: {len(listing_with_rates)}')
+print(f'Rows after outlier removal: {len(listing_clean)}')
+print(f'Rows removed: {len(listing_with_rates) - len(listing_clean)}')
+
+print(f'\nMedian ListPrice before: {listing_with_rates["ListPrice"].median()}')
+print(f'Median ListPrice after: {listing_clean["ListPrice"].median()}')
+
+print(f'\nMedian LivingArea before: {listing_with_rates["LivingArea"].median()}')
+print(f'Median LivingArea after: {listing_clean["LivingArea"].median()}')
+
+print(f'\nMedian DaysOnMarket before: {listing_with_rates["DaysOnMarket"].median()}')
+print(f'Median DaysOnMarket after: {listing_clean["DaysOnMarket"].median()}')
